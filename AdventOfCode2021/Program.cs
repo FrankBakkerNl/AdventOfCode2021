@@ -23,6 +23,15 @@ namespace AdventOfCode2020
 
         private static void RunAll()
         {
+
+            WriteLine("Running tests");
+            foreach (var answerMethod in PuzzleRefection.GetAnswerMethods())
+            {
+                RunTest(answerMethod);
+            }
+
+            WriteLine();
+            WriteLine("Running real input");
             foreach (var answerMethod in PuzzleRefection.GetAnswerMethods())
             {
                 PrintAnswer(answerMethod);
@@ -42,6 +51,15 @@ namespace AdventOfCode2020
 
             var expectedResult = methodInfo.GetCustomAttribute<ResultAttribute>()?.Result;
 
+            PrintResult(expectedResult, result);
+            
+            BackgroundColor = Black;
+            ForegroundColor = Gray;
+            WriteLine("{0,12:##,###.000} ms", stopwatch.Elapsed.TotalMilliseconds );
+        }
+
+        private static void PrintResult(object? expectedResult, object? result)
+        {
             if (expectedResult != null)
             {
                 if (expectedResult.Equals(result))
@@ -67,11 +85,9 @@ namespace AdventOfCode2020
                 ForegroundColor = White;
                 Write("{0,15}", result);
                 WindowsClipboard.SetText(result?.ToString()!);
-
             }
             BackgroundColor = Black;
             ForegroundColor = Gray;
-            WriteLine("{0,12:##,###.000} ms", stopwatch.Elapsed.TotalMilliseconds );
         }
 
         private static object? GetAnswer(MethodInfo methodInfo)
@@ -80,6 +96,22 @@ namespace AdventOfCode2020
             var input = InputDataManager.GetInputArgs(methodInfo);
 
             return methodInfo.Invoke(instance, input);
+        }
+        
+        private static void RunTest(MethodInfo methodInfo)
+        {
+            var testAtribute = methodInfo.GetCustomAttribute<TestCase>();
+            if (testAtribute == null) return;
+            
+            var instance = methodInfo.IsStatic ? null : Activator.CreateInstance(methodInfo.DeclaringType!);
+            var input = InputDataManager.GetInputArgs(methodInfo, testAtribute.Filename);
+
+            var result =  methodInfo.Invoke(instance, input);
+
+            Write($"{methodInfo.DeclaringType?.Name[^2..].TrimStart('0'),2}.{methodInfo.Name[^1..]} => ");
+            PrintResult(testAtribute.Result, result);
+            WriteLine();
+            
         }
     }
 }

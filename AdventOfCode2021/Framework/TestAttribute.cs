@@ -11,9 +11,19 @@ namespace AdventOfCode2020
     
     class TestCase : Attribute
     {
-        public TestCase(string filename, object result)
+        public string Filename { get; } = "TestInput";
+        public object Result { get; }
+
+        public TestCase(object result)
         {
-            
+            Result = result;
+        }
+
+        
+        public TestCase(object result, string filename)
+        {
+            Filename = filename;
+            Result = result;
         }
     }
 }
